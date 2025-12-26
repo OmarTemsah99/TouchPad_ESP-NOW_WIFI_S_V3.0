@@ -9,9 +9,9 @@
 #define R2 10000.0f             // Adjust as per your voltage divider
 #define CALIBRATION_FACTOR 1.0f // Adjust as needed
 
-void SensorManager::updateSensorData(const String &senderIP, const String &clientId, int touchValue, float batteryVoltage, float batteryPercent)
+void SensorManager::updateSensorData(const String &senderIP, const String &clientId, int touchValue, float batteryPercent)
 {
-    sensorDataMap[senderIP] = {clientId, touchValue, batteryVoltage, batteryPercent};
+    sensorDataMap[senderIP] = {clientId, touchValue, batteryPercent};
 }
 
 String SensorManager::getSensorDataJSON() const
@@ -25,7 +25,6 @@ String SensorManager::getSensorDataJSON() const
         json += "\"" + pair.first + "\":{";
         json += "\"clientId\":\"" + pair.second.clientId + "\",";
         json += "\"touch\":" + String(pair.second.touchValue) + ",";
-        json += "\"batteryVoltage\":" + String(pair.second.batteryVoltage, 2) + ",";
         json += "\"batteryPercent\":" + String(pair.second.batteryPercent, 1);
         json += "}";
         first = false;
@@ -122,10 +121,8 @@ String SensorManager::getLocalSensorDataJSON() const
 
     json += "\"clientId\":" + String(clientId) + ",";
     int touchValue = getLocalTouchValue();
-    float batteryVoltage = getLocalBatteryVoltage();
     float batteryPercent = getLocalBatteryPercent();
     json += "\"touch\":" + String(touchValue) + ",";
-    json += "\"batteryVoltage\":" + String(batteryVoltage, 2) + ",";
     json += "\"batteryPercent\":" + String(batteryPercent, 1);
     json += "}";
     return json;

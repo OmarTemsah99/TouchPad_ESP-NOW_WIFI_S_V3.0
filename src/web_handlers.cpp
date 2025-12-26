@@ -61,20 +61,17 @@ void WebHandlers::handleSensorData(AsyncWebServerRequest *request)
 {
     String ip = request->client()->remoteIP().toString();
     int touch = 0;
-    float voltage = 0.0;
     float percent = 0.0;
     String clientId = "0";
 
     if (request->hasParam("touch"))
         touch = request->getParam("touch")->value().toInt();
-    if (request->hasParam("batteryVoltage"))
-        voltage = request->getParam("batteryVoltage")->value().toFloat();
     if (request->hasParam("batteryPercent"))
         percent = request->getParam("batteryPercent")->value().toFloat();
     if (request->hasParam("clientId"))
         clientId = request->getParam("clientId")->value();
 
-    sensorManager->updateSensorData(ip, clientId, touch, voltage, percent);
+    sensorManager->updateSensorData(ip, clientId, touch, percent);
     request->send(200, "text/plain", "OK");
 }
 

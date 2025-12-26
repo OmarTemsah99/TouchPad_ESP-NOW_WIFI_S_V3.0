@@ -67,11 +67,6 @@
                 <strong>Touch Value:</strong> ${
                   typeof data.touch !== "undefined" ? data.touch : "N/A"
                 }<br>
-                <strong>Battery Voltage:</strong> ${
-                  typeof data.batteryVoltage !== "undefined"
-                    ? data.batteryVoltage.toFixed(2) + " V"
-                    : "N/A"
-                }<br>
                 <strong>Battery Percent:</strong> ${
                   typeof data.batteryPercent !== "undefined"
                     ? data.batteryPercent.toFixed(1) + "%"
@@ -100,7 +95,7 @@
         document.getElementById("increaseBtn").onclick = () =>
           changeClientId(1);
         loadLocalSensorData();
-        setInterval(loadLocalSensorData, 200);
+        setInterval(loadLocalSensorData, 1000);
       });
     </script>
   </head>

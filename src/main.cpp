@@ -29,23 +29,27 @@ U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE, /* c
 #define BTN_INC_PIN 4
 #define BTN_DEC_PIN 15
 
-int buttonStateInc = HIGH;
-int lastButtonStateInc = HIGH;
+int buttonStateInc = LOW;
+int lastButtonStateInc = LOW;
 unsigned long lastDebounceTimeInc = 0;
 
-int buttonStateDec = HIGH;
-int lastButtonStateDec = HIGH;
+int buttonStateDec = LOW;
+int lastButtonStateDec = LOW;
 unsigned long lastDebounceTimeDec = 0;
 
 const unsigned long debounceDelay = 50;
 
+/* update rate for button */
+unsigned long previousMillis_Buttons = 0;
+const long interval_Buttons = 200;
+
 /* update rate for display */
 unsigned long previousMillis_Display = 0;
-const long interval_Display = 100;
+const long interval_Display = 500;
 
 // ========================= CLIENT CONFIGURATION =========================
-const char *SERVER_URL = "http://192.168.1.200/sensor";
-const unsigned long SEND_INTERVAL = 200; // ms
+const char *SERVER_URL = "http://192.168.0.200/sensor";
+const unsigned long SEND_INTERVAL = 500; // ms
 
 // ========================= TIMING VARIABLES =========================
 unsigned long lastSensorSend = 0;
@@ -85,7 +89,6 @@ void handleButton(int &lastState, int &buttonState, unsigned long &lastTime, int
 void sendSensorDataToServer()
 {
   int touchValue = sensorManager.getLocalTouchValue();
-  float batteryVoltage = sensorManager.getLocalBatteryVoltage();
   float batteryPercent = sensorManager.getLocalBatteryPercent();
   int clientId = clientIdentity.get();
 
@@ -95,13 +98,12 @@ void sendSensorDataToServer()
 
   String postData = "clientId=" + String(clientId) +
                     "&touch=" + String(touchValue) +
-                    "&batteryVoltage=" + String(batteryVoltage, 2) +
                     "&batteryPercent=" + String(batteryPercent, 1);
   int responseCode = http.POST(postData);
 
   if (responseCode == 200)
   {
-    Serial.printf("[SEND] ID: %d, Touch: %d, Battery: %.2fV (%.1f%%)\n", clientId, touchValue, batteryVoltage, batteryPercent);
+    Serial.printf("[SEND] ID: %d, Touch: %d, Battery: %.2fV (%.1f%%)\n", clientId, touchValue, batteryPercent);
   }
   else
   {
@@ -114,9 +116,8 @@ void sendSensorDataToServer()
 void displayLocalSensorData()
 {
   int touchValue = sensorManager.getLocalTouchValue();
-  float batteryVoltage = sensorManager.getLocalBatteryVoltage();
   float batteryPercent = sensorManager.getLocalBatteryPercent();
-  Serial.printf("Local Touch: %d, Battery: %.2fV (%.1f%%)\n", touchValue, batteryVoltage, batteryPercent);
+  Serial.printf("Local Touch: %d, Battery: %.2fV (%.1f%%)\n", touchValue, batteryPercent);
 }
 
 bool initializeSystem()
@@ -161,20 +162,26 @@ void setup()
       delay(1000);
   }
 
-  pinMode(BTN_INC_PIN, INPUT);
-  pinMode(BTN_DEC_PIN, INPUT);
+  pinMode(BTN_INC_PIN, INPUT_PULLUP);
+  pinMode(BTN_DEC_PIN, INPUT_PULLUP);
 
   u8g2.begin();
 }
 
 void loop()
 {
-  unsigned long currentMillis_Display = millis();
-
-  handleButton(lastButtonStateInc, buttonStateInc, lastDebounceTimeInc, BTN_INC_PIN, +1);
-  handleButton(lastButtonStateDec, buttonStateDec, lastDebounceTimeDec, BTN_DEC_PIN, -1);
-
   unsigned long currentTime = millis();
+  unsigned long currentMillis_Display = millis();
+  unsigned long currentMillis_Button = millis();
+
+  if (currentMillis_Button - previousMillis_Buttons >= interval_Buttons)
+  {
+
+    handleButton(lastButtonStateInc, buttonStateInc, lastDebounceTimeInc, BTN_INC_PIN, +1);
+    handleButton(lastButtonStateDec, buttonStateDec, lastDebounceTimeDec, BTN_DEC_PIN, -1);
+    previousMillis_Buttons = currentMillis_Button;
+  }
+
   wifiManager.handleConnection();
 
   if (wifiManager.isConnected())
@@ -219,4 +226,6 @@ void loop()
 
     previousMillis_Display = currentMillis_Display;
   }
+
+  yield();
 }

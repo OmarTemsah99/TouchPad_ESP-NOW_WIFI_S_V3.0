@@ -10,7 +10,6 @@ struct SensorData
 {
     String clientId;
     int touchValue;
-    float batteryVoltage;
     float batteryPercent;
 };
 
@@ -22,7 +21,7 @@ private:
 
 public:
     void begin(ClientIdentity *identity); // Initialize sensor pins
-    void updateSensorData(const String &senderIP, const String &clientId, int touchValue, float batteryVoltage, float batteryPercent);
+    void updateSensorData(const String &senderIP, const String &clientId, int touchValue, float batteryPercent);
     String getSensorDataJSON() const;
     const std::map<String, SensorData> &getAllSensorData() const;
     void clearSensorData();
